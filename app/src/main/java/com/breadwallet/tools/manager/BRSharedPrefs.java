@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.breadwallet.tools.crypto.CashAddr;
 import com.breadwallet.tools.util.BRConstants;
 
 import org.json.JSONArray;
@@ -110,14 +111,14 @@ public class BRSharedPrefs {
         editor.apply();
     }
 
-    public static String getReceiveAddress(Context context) {
+    public static CashAddr getReceiveAddress(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(BRConstants.PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(BRConstants.RECEIVE_ADDRESS, "");
+        return CashAddr.fromLegacy(prefs.getString(BRConstants.RECEIVE_ADDRESS, ""));
     }
 
-    public static void putReceiveAddress(Context ctx, String tmpAddr) {
+    public static void putReceiveAddress(Context ctx, String tmpLegacyAddr) {
         SharedPreferences.Editor editor = ctx.getSharedPreferences(BRConstants.PREFS_NAME, Context.MODE_PRIVATE).edit();
-        editor.putString(BRConstants.RECEIVE_ADDRESS, tmpAddr);
+        editor.putString(BRConstants.RECEIVE_ADDRESS, tmpLegacyAddr);
         editor.apply();
     }
 

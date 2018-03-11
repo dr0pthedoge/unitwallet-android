@@ -27,6 +27,7 @@ import com.breadwallet.presenter.customviews.BRKeyboard;
 import com.breadwallet.presenter.customviews.BRLinearLayoutWithCaret;
 import com.breadwallet.tools.animation.BRAnimator;
 import com.breadwallet.tools.animation.SlideDetector;
+import com.breadwallet.tools.crypto.CashAddr;
 import com.breadwallet.tools.manager.BRClipboardManager;
 import com.breadwallet.tools.manager.BRSharedPrefs;
 import com.breadwallet.tools.manager.CurrencyFetchManager;
@@ -72,7 +73,7 @@ public class FragmentReceive extends Fragment {
     public ImageView mQrImage;
     public LinearLayout backgroundLayout;
     public LinearLayout signalLayout;
-    private String receiveAddress;
+    private CashAddr receiveAddress;
     private View separator;
     private BRButton shareButton;
     private Button shareEmail;
@@ -292,19 +293,13 @@ public class FragmentReceive extends Fragment {
                 boolean success = BRWalletManager.refreshAddress(finalCtx);
                 if (!success) throw new RuntimeException("failed to retrieve address");
 
-                final String cashAddress  = CurrencyFetchManager.convertAddress((finalCtx1), BRSharedPrefs.getReceiveAddress(finalCtx1));
-
                 finalCtx1.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         receiveAddress = BRSharedPrefs.getReceiveAddress(finalCtx1);
-
-
-
-
-                      //  Log.e("Recd", test);
-                        mAddress.setText(receiveAddress);
-                        boolean generated = BRWalletManager.getInstance().generateQR(finalCtx1, "bitcoincash:" + receiveAddress, mQrImage);
+                        String displayAddr = receiveAddress.toString();
+                        mAddress.setText(displayAddr);
+                        boolean generated = BRWalletManager.getInstance().generateQR(finalCtx1, displayAddr, mQrImage);
                         if (!generated)
                             throw new RuntimeException("failed to generate qr image for address");
                     }

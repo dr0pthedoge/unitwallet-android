@@ -328,8 +328,10 @@ public class TransactionListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 for (TxItem item : backUpFeed) {
                     metaData = KVStoreManager.getInstance().getTxMetaData(mContext, item.getTxHash());
                     if (item.getTxHashHexReversed().toLowerCase().contains(lowerQuery)
-                            || item.getFrom()[0].toLowerCase().contains(lowerQuery)
-                            || item.getTo()[0].toLowerCase().contains(lowerQuery) ||
+                            || item.getFrom()[0].toString().contains(lowerQuery)
+                            || item.getFrom()[0].toLegacy().toLowerCase().contains(lowerQuery)
+                            || item.getTo()[0].toString().contains(lowerQuery)
+                            || item.getTo()[0].toLegacy().toLowerCase().contains(lowerQuery) ||
                             (metaData.comment != null && metaData.comment.toLowerCase().contains(lowerQuery))) {
                         if (switchesON == 0) {
                             filteredList.add(item);

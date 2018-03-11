@@ -1,20 +1,20 @@
 package com.breadwallet.presenter.activities.camera;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
 import com.breadwallet.presenter.activities.util.ActivityUTILS;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.tools.animation.SpringAnimator;
+import com.breadwallet.tools.crypto.CashAddr;
 import com.breadwallet.tools.manager.CurrencyFetchManager;
 import com.breadwallet.tools.qrcode.QRReader;
 import com.breadwallet.tools.security.BitcoinUrlHandler;
@@ -46,18 +46,17 @@ import com.platform.tools.BRBitId;
  * THE SOFTWARE.
  */
 public class ScanQRActivity extends BRActivity {
+    private static final String TAG = ScanQRActivity.class.getName();
+    public static boolean appVisible = false;
+    private static ScanQRActivity app;
     private SurfaceView mySurfaceView;
     private QRReader qrEader;
-    private static final String TAG = ScanQRActivity.class.getName();
     //    private boolean dataProcessing = false;
     private ImageView cameraGuide;
     private TextView descriptionText;
     private long lastUpdated;
     private UIUpdateTask task;
     private boolean handlingCode;
-    public static boolean appVisible = false;
-    private static ScanQRActivity app;
-
 
     public static ScanQRActivity getApp() {
         return app;
@@ -84,46 +83,26 @@ public class ScanQRActivity extends BRActivity {
             public void onDetected(final String theString) {
 
                 if (handlingCode) return;
-				String interData = "";
+                String interData = "";
 
                 //Following conventions for bitcoincash urls, lazy string manipulation, if it ain't broke, don't fix it!
-                if (theString.contains("bitcoincash:")){
-                    if (theString.charAt(12) == 'C' || theString.charAt(12) == 'H') {
-                        String bchString = theString.substring(12);
-
-                        String convertedBTCAddress = CurrencyFetchManager.convertAddress(ScanQRActivity.this, bchString);
-
-                        interData = "bitcoin:" + convertedBTCAddress;
-
-
-                    }
-                    // Include addresses that start with 1 or 3.
-                    else if (theString.charAt(12) == '1' || theString.charAt(12) == '3'){
-
-                        interData = "bitcoin:" + theString.substring(12);
-
-                    }
-
-                    else {
+                final String PREFIX = BuildConfig.CASHADDR_PREFIX + ":";
+                if (theString.contains(PREFIX)) {
+                    String unprefixed = theString.substring(12);
+                    if (unprefixed.charAt(0) == 'C' || unprefixed.charAt(0) == 'H') {
+                        String converted = CurrencyFetchManager.convertAddress(ScanQRActivity.this, unprefixed);
+                        interData = PREFIX + converted;
+                    } else {
                         interData = theString;
                     }
+                } else if (theString.charAt(8) == 'C' || theString.charAt(8) == 'H') {
+                    String unprefixed = theString.substring(8);
+                    String converted = CurrencyFetchManager.convertAddress(ScanQRActivity.this, unprefixed);
+                    interData = PREFIX + converted;
+                } else {
+                    interData = theString;
                 }
-				 else if (theString.charAt(8) == 'C' || theString.charAt(8) == 'H') {
-            String bchString = theString.substring(8);
-
-                     String convertedBTCAddress = CurrencyFetchManager.convertAddress(ScanQRActivity.this, bchString);
-
-                     interData = "bitcoin:" + convertedBTCAddress;
-
-        }
-
-        else {
-                     interData = theString;
-                 }
-		final String data = interData;
-				
-				
-				
+                final String data = interData;
 
                 if (BitcoinUrlHandler.isBitcoinUrl(data) || BRBitId.isBitId(data)) {
                     runOnUiThread(new Runnable() {
@@ -137,7 +116,7 @@ public class ScanQRActivity extends BRActivity {
 
                         }
                     });
-                }  else {
+                } else {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -194,6 +173,10 @@ public class ScanQRActivity extends BRActivity {
         finish();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+    }
+
     private class UIUpdateTask extends Thread {
         public boolean running = true;
 
@@ -217,9 +200,5 @@ public class ScanQRActivity extends BRActivity {
                 }
             }
         }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
     }
 }

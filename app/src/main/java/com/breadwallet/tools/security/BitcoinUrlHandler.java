@@ -3,20 +3,18 @@ package com.breadwallet.tools.security;
 import android.app.Activity;
 import android.util.Log;
 
+import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
-import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.customviews.BRDialogView;
 import com.breadwallet.presenter.entities.PaymentItem;
 import com.breadwallet.presenter.entities.PaymentRequestWrapper;
 import com.breadwallet.presenter.entities.RequestObject;
 import com.breadwallet.tools.animation.BRAnimator;
 import com.breadwallet.tools.animation.BRDialog;
+import com.breadwallet.tools.crypto.CashAddr;
 import com.breadwallet.tools.manager.BREventManager;
 import com.breadwallet.tools.threads.PaymentProtocolTask;
-import com.breadwallet.tools.util.BRCurrency;
 import com.breadwallet.wallet.BRWalletManager;
-import com.breadwallet.tools.manager.CurrencyFetchManager;
-
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -109,39 +107,38 @@ public class BitcoinUrlHandler {
     }
 
     public static boolean isBitcoinUrl(String url) {
-
-            RequestObject requestObject = getRequestFromString(url);
-            // return true if the request is valid url and has param: r or param: address
-            // return true if it is a valid bitcoinPrivKey
-            return (requestObject != null && (requestObject.r != null || requestObject.address != null)
-                    || BRWalletManager.getInstance().isValidBitcoinBIP38Key(url)
-                    || BRWalletManager.getInstance().isValidBitcoinPrivateKey(url));
-
-
+        RequestObject requestObject = getRequestFromString(url);
+        // return true if the request is valid url and has param: r or param: address
+        // return true if it is a valid bitcoinPrivKey
+        return (requestObject != null && (requestObject.r != null || requestObject.address != null)
+                || BRWalletManager.getInstance().isValidBitcoinBIP38Key(url)
+                || BRWalletManager.getInstance().isValidBitcoinPrivateKey(url));
     }
-
 
     public static RequestObject getRequestFromString(String str) {
         if (str == null || str.isEmpty()) return null;
         RequestObject obj = new RequestObject();
 
         String tmp = str.trim().replaceAll("\n", "").replaceAll(" ", "%20");
-
-        if (!tmp.startsWith("bitcoin://")) {
-            if (!tmp.startsWith("bitcoin:"))
-                tmp = "bitcoin://".concat(tmp);
-            else
-                tmp = tmp.replace("bitcoin:", "bitcoin://");
+        final String prefix = BuildConfig.CASHADDR_PREFIX + ":";
+        if (!tmp.startsWith(prefix)) {
+            tmp = BuildConfig.CASHADDR_PREFIX + "://" + tmp;
+        } else if (!tmp.startsWith(prefix + "//")) {
+            tmp = tmp.replace(":", "://");
         }
+
         URI uri = URI.create(tmp);
 
         String host = uri.getHost();
         if (host != null) {
             String addrs = host.trim();
             if (BRWalletManager.validateAddress(addrs)) {
-                obj.address = addrs;
+                obj.address = CashAddr.fromLegacy(addrs);
+            } else if (CashAddr.validate(prefix + addrs)) {
+                obj.address = CashAddr.parse(prefix + addrs);
             }
         }
+
         String query = uri.getQuery();
         if (query == null) return obj;
         String[] params = query.split("&");
@@ -166,6 +163,7 @@ public class BitcoinUrlHandler {
                 obj.r = keyValue[1].trim();
             }
         }
+
         return obj;
     }
 
@@ -186,10 +184,9 @@ public class BitcoinUrlHandler {
 
     private static boolean tryBitcoinURL(final String url, final Activity app) {
         RequestObject requestObject = getRequestFromString(url);
-        if (requestObject == null || requestObject.address == null || requestObject.address.isEmpty())
-            return false;
-        final String[] addresses = new String[1];
-        addresses[0] = requestObject.address;
+        if (requestObject == null || requestObject.address == null) return false;
+
+        final CashAddr[] addresses = new CashAddr[]{requestObject.address};
 
         String amount = requestObject.amount;
 
@@ -200,15 +197,12 @@ public class BitcoinUrlHandler {
                     BRAnimator.showSendFragment(app, url);
                 }
             });
-        } else {
-            if (app != null) {
-                BRAnimator.killAllFragments(app);
-                BRSender.getInstance().sendTransaction(app, new PaymentItem(addresses, null, new BigDecimal(amount).longValue(), null, true));
-            }
+        } else if (app != null) {
+            BRAnimator.killAllFragments(app);
+            BRSender.getInstance().sendTransaction(app, new PaymentItem(addresses, null, new BigDecimal(amount).longValue(), null, true));
         }
 
         return true;
-
     }
 
     public static native PaymentRequestWrapper parsePaymentRequest(byte[] req);

@@ -1,5 +1,7 @@
 package com.breadwallet.presenter.entities;
 
+import com.breadwallet.tools.crypto.CashAddr;
+
 /**
  * BreadWallet
  * <p/>
@@ -29,13 +31,13 @@ public class PaymentItem {
     public static final String TAG = PaymentItem.class.getName();
 
     public byte[] serializedTx;
-    public String[] addresses;
+    public CashAddr[] addresses;
     public long amount;
     public String cn;
     public boolean isAmountRequested;
     public String comment;
 
-    public PaymentItem(String[] addresses, byte[] tx, long theAmount, String theCn, boolean isAmountRequested) {
+    public PaymentItem(CashAddr[] addresses, byte[] tx, long theAmount, String theCn, boolean isAmountRequested) {
         this.isAmountRequested = isAmountRequested;
         this.serializedTx = tx;
         this.addresses = addresses;
@@ -43,7 +45,7 @@ public class PaymentItem {
         this.cn = theCn;
     }
 
-    public PaymentItem(String[] addresses, byte[] tx,long theAmount, String theCn, boolean isAmountRequested, String comment) {
+    public PaymentItem(CashAddr[] addresses, byte[] tx,long theAmount, String theCn, boolean isAmountRequested, String comment) {
         this.isAmountRequested = isAmountRequested;
         this.serializedTx = tx;
         this.addresses = addresses;

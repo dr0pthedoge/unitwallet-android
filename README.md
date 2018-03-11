@@ -16,4 +16,4 @@ Unit Wallet (Android) is a fork of [breadwallet Android](https://github.com/brea
 
 #### Wallet Description:
 
-Unit wallet is the gateway to the world of Bitcoin Cash for mobile, it is the quickest way to start using Bitcoin Cash on Android and iOS without needing to provide any personal information or signing up. Features of the wallet include, paying (via QR technology), sending, receiving and discovering places that accept Bitcoin Cash. Our wallet is completely non custodial, meaning that only you are in control of your money, it is impossible for us to freeze, steal or track you spending.
+Unit wallet is the gateway to the world of Bitcoin Cash for mobile, it is the quickest way to start using Bitcoin Cash on Android and iOS without needing to provide any personal information or signing up. Features of the wallet include, paying (via QR code), sending, receiving and discovering places that accept Bitcoin Cash. Our wallet is completely non custodial, meaning that only you are in control of your money, it is impossible for us to freeze, steal or track you spending.

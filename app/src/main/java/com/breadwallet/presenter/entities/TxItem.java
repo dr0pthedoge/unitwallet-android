@@ -1,7 +1,11 @@
 package com.breadwallet.presenter.entities;
 
 
+import com.breadwallet.tools.crypto.CashAddr;
+import com.breadwallet.tools.util.Fun;
 import com.breadwallet.tools.util.Utils;
+
+import static com.breadwallet.tools.util.Fun.map;
 
 /**
  * BreadWallet
@@ -36,8 +40,8 @@ public class TxItem {
     private long sent;
     private long received;
     private long fee;
-    private String to[];
-    private String from[];
+    private CashAddr to[];
+    private CashAddr from[];
     private long balanceAfterTx;
     private long outAmounts[];
     private boolean isValid;
@@ -55,12 +59,28 @@ public class TxItem {
         this.sent = sent;
         this.received = received;
         this.fee = fee;
-        this.to = to;
-        this.from = from;
+        this.to = new CashAddr[to.length];
+        map(to, new Fun.Map<String, CashAddr>() {
+            @Override
+            public CashAddr map(String value) {
+                return CashAddr.fromLegacy(value);
+            }
+        }).toArray(this.to);
+        this.from = new CashAddr[from.length];
+        map(from, new Fun.Map<String, CashAddr>() {
+            @Override
+            public CashAddr map(String value) {
+                return CashAddr.fromLegacy(value);
+            }
+        }).toArray(this.from);
         this.balanceAfterTx = balanceAfterTx;
         this.outAmounts = outAmounts;
         this.isValid = isValid;
         this.txSize = txSize;
+    }
+
+    public static String getTAG() {
+        return TAG;
     }
 
     public int getBlockHeight() {
@@ -75,7 +95,7 @@ public class TxItem {
         return txSize;
     }
 
-    public String[] getFrom() {
+    public CashAddr[] getFrom() {
         return from;
     }
 
@@ -95,15 +115,11 @@ public class TxItem {
         return sent;
     }
 
-    public static String getTAG() {
-        return TAG;
-    }
-
     public long getTimeStamp() {
         return timeStamp;
     }
 
-    public String[] getTo() {
+    public CashAddr[] getTo() {
         return to;
     }
 

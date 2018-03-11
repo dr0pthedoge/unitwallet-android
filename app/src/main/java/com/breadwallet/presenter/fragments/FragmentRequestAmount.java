@@ -27,6 +27,7 @@ import com.breadwallet.presenter.customviews.BRLinearLayoutWithCaret;
 import com.breadwallet.tools.adapter.CurAdapter;
 import com.breadwallet.tools.animation.BRAnimator;
 import com.breadwallet.tools.animation.SlideDetector;
+import com.breadwallet.tools.crypto.CashAddr;
 import com.breadwallet.tools.listeners.RecyclerItemClickListener;
 import com.breadwallet.tools.manager.BRClipboardManager;
 import com.breadwallet.tools.manager.BRSharedPrefs;
@@ -79,7 +80,7 @@ public class FragmentRequestAmount extends Fragment {
     public ImageView mQrImage;
     public LinearLayout backgroundLayout;
     public LinearLayout signalLayout;
-    private String receiveAddress;
+    private CashAddr receiveAddress;
     private BRButton shareButton;
     private Button shareEmail;
     private Button shareTextMessage;
@@ -305,7 +306,7 @@ public class FragmentRequestAmount extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mAddress.setText(receiveAddress);
+                        mAddress.setText(receiveAddress.toString());
                         boolean generated = generateQrImage(receiveAddress, "0", "BTC");
                         if (!generated)
                             throw new RuntimeException("failed to generate qr image for address");
@@ -424,7 +425,7 @@ public class FragmentRequestAmount extends Fragment {
 
     }
 
-    private boolean generateQrImage(String address, String strAmount, String iso) {
+    private boolean generateQrImage(CashAddr address, String strAmount, String iso) {
         String amountArg = "";
         if (strAmount != null && !strAmount.isEmpty()) {
             BigDecimal bigAmount = new BigDecimal((Utils.isNullOrEmpty(strAmount) || strAmount.equalsIgnoreCase(".")) ? "0" : strAmount);
@@ -432,7 +433,7 @@ public class FragmentRequestAmount extends Fragment {
             String am = new BigDecimal(amount).divide(new BigDecimal(100000000), 8, BRConstants.ROUNDING_MODE).toPlainString();
             amountArg = "?amount=" + am;
         }
-        return BRWalletManager.getInstance().generateQR(getActivity(), "bitcoincash:" + address + amountArg, mQrImage);
+        return BRWalletManager.getInstance().generateQR(getActivity(), address.toString() + amountArg, mQrImage);
     }
 
 

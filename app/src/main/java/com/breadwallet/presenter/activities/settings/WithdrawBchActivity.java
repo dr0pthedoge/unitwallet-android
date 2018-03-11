@@ -22,6 +22,7 @@ import com.breadwallet.presenter.entities.RequestObject;
 import com.breadwallet.presenter.interfaces.BRAuthCompletion;
 import com.breadwallet.tools.animation.BRAnimator;
 import com.breadwallet.tools.animation.BRDialog;
+import com.breadwallet.tools.crypto.CashAddr;
 import com.breadwallet.tools.manager.BRClipboardManager;
 import com.breadwallet.tools.manager.BRSharedPrefs;
 import com.breadwallet.tools.security.AuthManager;
@@ -93,7 +94,6 @@ public class WithdrawBchActivity extends BRActivity {
                 if (BRAnimator.isClickAllowed()) {
 
                     final String bitcoinUrl = BRClipboardManager.getClipboard(WithdrawBchActivity.this);
-                    String ifAddress = null;
                     RequestObject obj = BitcoinUrlHandler.getRequestFromString(bitcoinUrl);
                     if (obj == null) {
                         //builder.setTitle(getResources().getString(R.string.alert));
@@ -109,7 +109,7 @@ public class WithdrawBchActivity extends BRActivity {
                         BRClipboardManager.putClipboard(WithdrawBchActivity.this, "");
                         return;
                     }
-                    ifAddress = obj.address;
+                    CashAddr ifAddress = obj.address;
                     if (ifAddress == null) {
                         //builder.setTitle(getResources().getString(R.string.alert));
                         builder.setMessage(getResources().getString(R.string.Send_invalidAddressOnPasteboard));
@@ -126,15 +126,15 @@ public class WithdrawBchActivity extends BRActivity {
                     }
 //                    final String finalAddress = tempAddress;
                     BRWalletManager wm = BRWalletManager.getInstance();
-
-                    if (wm.isValidBitcoinPrivateKey(ifAddress) || wm.isValidBitcoinBIP38Key(ifAddress)) {
-                        BRWalletManager.getInstance().confirmSweep(WithdrawBchActivity.this, ifAddress);
+                    String legacyAddr = ifAddress.toLegacy();
+                    if (wm.isValidBitcoinPrivateKey(legacyAddr) || wm.isValidBitcoinBIP38Key(legacyAddr)) {
+                        BRWalletManager.getInstance().confirmSweep(WithdrawBchActivity.this, legacyAddr);
                         return;
                     }
 
-                    if (BRWalletManager.validateAddress(ifAddress.trim())) {
+                    if (BRWalletManager.validateAddress(legacyAddr)) {
                         final BRWalletManager m = BRWalletManager.getInstance();
-                        final String finalIfAddress = ifAddress;
+                        final String finalIfAddress = legacyAddr;
                         new Thread(new Runnable() {
                             @Override
                             public void run() {

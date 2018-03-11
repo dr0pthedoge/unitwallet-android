@@ -44,6 +44,7 @@ import com.breadwallet.presenter.fragments.FragmentSend;
 import com.breadwallet.presenter.fragments.FragmentSupport;
 import com.breadwallet.presenter.fragments.FragmentTransactionDetails;
 import com.breadwallet.presenter.interfaces.BROnSignalCompletion;
+import com.breadwallet.tools.crypto.CashAddr;
 import com.breadwallet.tools.manager.BRSharedPrefs;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.util.Utils;
@@ -323,12 +324,12 @@ public class BRAnimator {
         return itemLayoutTransition;
     }
 
-    public static void showRequestFragment(Activity app, String address) {
+    public static void showRequestFragment(Activity app, CashAddr address) {
         if (app == null) {
             Log.e(TAG, "showRequestFragment: app is null");
             return;
         }
-        if (Utils.isNullOrEmpty(address)) {
+        if (address == null) {
             Log.e(TAG, "showRequestFragment: address is empty: " + address);
             return;
         }
@@ -339,7 +340,7 @@ public class BRAnimator {
 
         fragmentRequestAmount = new FragmentRequestAmount();
         Bundle bundle = new Bundle();
-        bundle.putString("address", address);
+        bundle.putString("address", address.toString());
         fragmentRequestAmount.setArguments(bundle);
         app.getFragmentManager().beginTransaction()
                 .setCustomAnimations(0, 0, 0, R.animator.plain_300)

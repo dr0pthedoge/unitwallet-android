@@ -1,123 +1,98 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
-model {
-    android {
-        compileSdkVersion = 25
-        buildToolsVersion = '25.0.3'
+android {
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
 
-        defaultConfig {
-            testInstrumentationRunner = 'android.support.test.runner.AndroidJUnitRunner'
-            applicationId = 'com.unitwallet'
-            minSdkVersion.apiLevel = 23
-            targetSdkVersion.apiLevel = 25
-            versionCode = 1
-            versionName = "fp-1"
-        }
-
-        productFlavors.with {
-            create("Unit") {
-                applicationId "com.unitwallet"
-                resValues.with {
-                    create() {
-                        type = "string"
-                        name = "app_name"
-                        value = "Unit Wallet"
-                    }
-                }
-            }
-            create("demoa") {
-                applicationId "com.breaddemo"
-                resValues.with {
-                    create() {
-                        type = "string"
-                        name = "app_name"
-                        value = "Unit Wallet-Demo"
-                    }
-                }
-            }
-
-        }
+    defaultConfig {
+        testInstrumentationRunner = 'android.support.test.runner.AndroidJUnitRunner'
+        applicationId = 'com.unitwallet'
+        minSdkVersion 23
+        targetSdkVersion 26
+        versionCode 1
+        versionName "fp-1"
+        multiDexEnabled true
 
         ndk {
-            platformVersion = "23"
-            abiFilters.addAll(['x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'arm64-v8a'])
-            moduleName = "core"
-            toolchain = "clang"
-
-            CFlags.addAll(['-std=c99', '-g', '-DBITCOIN_TESTNET=0', '-I' + file('src/main/secp/secp256k1/include'),
-                           '-I' + file('src/main/secp/secp256k1'), '-I' + file('src/main/secp'), '-I' + file('src/main/jni/unitwallet-core'),
-                           '-I' + file('src/main/jni/transition'), '-Wno-trigraphs', /**'-Wmissing',*/
-                           '-Wno-missing-prototypes', '-Werror=return-type',
-                           '-Wdocumentation', '-Wunreachable-code-aggressive', '-Wno-missing-braces', '-Wparentheses', '-Wswitch', '-Wno-unused-function',
-                           '-Wunused-label', '-Wno-unused-parameter', '-Wunused-variable', '-Wunused-value', '-Wempty-body',
-                           '-Wconditional-uninitialized', '-Wno-unknown-pragmas', '-pedantic', '-Wshadow', '-Wfour-char-constants',
-                           '-Wno-conversion', '-Wconstant-conversion', '-Wint-conversion', '-Wbool-conversion ', '-Wenum-conversion',
-                           '-Wassign-enum', '-Wno-shorten-64-to-32', '-Wpointer-sign', '-Wnewline-eof', '-Wdeprecated-declarations', '-Wno-sign-conversion'])
-            ldLibs.addAll(['android', 'log'])
-            stl = 'gnustl_static'
+            abiFilters 'x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'arm64-v8a'
         }
-
-        lintOptions.with {
-            // set to true to turn off analysis progress reporting by lint
-            quiet = false
-            explainIssues = true
-            // if true, stop the gradle build if errors are found
-            abortOnError = true
-            // if true, only report errors
-            ignoreWarnings = false
-
-            disable 'MissingTranslation'
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_TOOLCHAIN=clang"
+            }
         }
+    }
 
-        buildTypes {
-            gitUpdateModules()
-            release {
-                proguardFiles.add(file('proguard-rules.pro'))
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+
+    flavorDimensions "mode"
+
+    productFlavors {
+        unit {
+            applicationId "com.unitwallet"
+            dimension "mode"
+            resValue "string", "app_name", "Unit Wallet"
+            buildConfigField "boolean", "BITCOIN_TESTNET", "false"
+            buildConfigField "String", "CASHADDR_PREFIX", '"bitcoincash"'
+            externalNativeBuild.cmake {
+                cFlags "-DBITCOIN_TESTNET=0"
+                targets "core"
+            }
+        }
+        demo {
+            applicationId "com.unitwallet"
+            dimension "mode"
+            resValue "string", "app_name", "Unit Wallet-Demo"
+            buildConfigField "boolean", "BITCOIN_TESTNET", "true"
+            buildConfigField "String", "CASHADDR_PREFIX", '"bchtest"'
+            externalNativeBuild.cmake {
+                cFlags "-DBITCOIN_TESTNET=1"
+                targets "core"
+            }
+        }
+    }
+
+    lintOptions.with {
+        // set to true to turn off analysis progress reporting by lint
+        quiet = false
+        explainIssues = true
+        // if true, stop the gradle build if errors are found
+        abortOnError = true
+        // if true, only report errors
+        ignoreWarnings = false
+
+        disable 'MissingTranslation'
+    }
+
+    buildTypes {
+        gitUpdateModules()
+        release {
+            proguardFiles.add(file('proguard-rules.pro'))
+            minifyEnabled = false
+            debuggable = false
+            ndk {
                 minifyEnabled = false
                 debuggable = false
-
-                buildConfigFields.with {
-                    create() {
-                        type = "boolean"
-                        name = "BITCOIN_TESTNET"
-                        value = "false"
-                    }
-                }
-                ndk {
-                    CFlags.addAll(['-DBITCOIN_TESTNET=0'])
-                    minifyEnabled = false
-                    debuggable = false
-                }
             }
-            debug {
-                proguardFiles.add(file('proguard-rules.pro'))
-                debuggable = true
+        }
+        debug {
+            debuggable = true
+            minifyEnabled = false
+            ndk {
                 minifyEnabled = false
-                buildConfigFields.with {
-                    create() {
-                        type = "boolean"
-                        name = "BITCOIN_TESTNET"
-                        value = "false"
-                    }
-                }
-                ndk {
-                    CFlags.addAll(['-DBITCOIN_TESTNET=0'])
-                    minifyEnabled = false
-                    debuggable = true
-                }
+                debuggable = true
             }
-
         }
     }
 }
 
 def gitUpdateModules() {
-    ['sh', '-c', 'git submodule foreach git pull origin master'].execute().text.trim()
-    getLogger().debug("gitUpdateModules done!")
-}
-
-repositories {
-    mavenCentral()
+    //['sh', '-c', 'git submodule foreach git pull origin master'].execute().text.trim()
+    //getLogger().debug("gitUpdateModules done!")
 }
 
 dependencies {
@@ -128,16 +103,16 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.22'
     //    compile 'org.apache.commons:commons-compress:1.8.1'
     //    compile group: 'org.apache.ant', name: 'ant', version: '1.8.2'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:design:25.3.1'
-    compile 'com.android.support:gridlayout-v7:25.3.1'
-    compile 'com.android.support:support-v13:25.3.1'
-    compile 'com.google.android.gms:play-services-vision:11.0.4'
-    compile 'com.android.support:recyclerview-v7:25.3.1'
-    compile 'com.android.support:cardview-v7:25.3.1'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support:design:26.1.0'
+    compile 'com.android.support:gridlayout-v7:26.1.0'
+    compile 'com.android.support:support-v13:26.1.0'
+    compile 'com.google.android.gms:play-services-vision:11.8.0'
+    compile 'com.android.support:recyclerview-v7:26.1.0'
+    compile 'com.android.support:cardview-v7:26.1.0'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    compile 'com.google.firebase:firebase-core:10.2.1'
-    compile 'com.google.firebase:firebase-crash:10.2.1'
+    compile 'com.google.firebase:firebase-core:11.8.0'
+    compile 'com.google.firebase:firebase-crash:11.8.0'
     compile 'io.sigpipe:jbsdiff:1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.volley:volley:1.0.0'

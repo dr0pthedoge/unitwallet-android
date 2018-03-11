@@ -17,7 +17,9 @@ import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
+import com.breadwallet.BuildConfig;
 import com.breadwallet.presenter.activities.BreadActivity;
+import com.breadwallet.tools.crypto.CashAddr;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -174,12 +176,13 @@ public class Utils {
         return data;
     }
 
-    public static String createBitcoinUrl(String address, long satoshiAmount, String label, String message, String rURL) {
+    //TODO: review
+    public static String createBitcoinUrl(CashAddr address, long satoshiAmount, String label, String message, String rURL) {
 
         Uri.Builder builder = new Uri.Builder();
-        builder = builder.scheme("bitcoin");
-        if (address != null && !address.isEmpty())
-            builder = builder.appendPath(address);
+        builder = builder.scheme(BuildConfig.CASHADDR_PREFIX);
+        if (address != null)
+            builder = builder.appendPath(address.toUnprefixedString());
         if (satoshiAmount != 0)
             builder = builder.appendQueryParameter("amount", new BigDecimal(satoshiAmount).divide(new BigDecimal(100000000), 8, BRConstants.ROUNDING_MODE).toPlainString());
         if (label != null && !label.isEmpty())

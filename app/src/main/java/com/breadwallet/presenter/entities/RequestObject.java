@@ -1,6 +1,8 @@
 package com.breadwallet.presenter.entities;
 
 
+import com.breadwallet.tools.crypto.CashAddr;
+
 /**
  * BreadWallet
  * <p>
@@ -28,7 +30,7 @@ package com.breadwallet.presenter.entities;
 
 public class RequestObject {
     public static final String TAG = RequestObject.class.getName();
-    public String address;
+    public CashAddr address;
     public String r;
     public String amount;
     public String label;

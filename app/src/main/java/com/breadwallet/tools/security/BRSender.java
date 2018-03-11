@@ -13,6 +13,7 @@ import com.breadwallet.presenter.entities.PaymentItem;
 import com.breadwallet.presenter.interfaces.BRAuthCompletion;
 import com.breadwallet.tools.animation.BRAnimator;
 import com.breadwallet.tools.animation.BRDialog;
+import com.breadwallet.tools.crypto.CashAddr;
 import com.breadwallet.tools.manager.BRSharedPrefs;
 import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.util.BRCurrency;
@@ -157,14 +158,14 @@ public class BRSender {
                 throw new InsufficientFundsException(amount, balance);
             }
 
-            long feeForTx = m.feeForTransaction(paymentRequest.addresses[0], paymentRequest.amount);
+            long feeForTx = m.feeForTransaction(paymentRequest.addresses[0].toLegacy(), paymentRequest.amount);
             throw new FeeNeedsAdjust(amount, balance, feeForTx);
         }
         // payment successful
         new Thread(new Runnable() {
             @Override
             public void run() {
-                byte[] tmpTx = m.tryTransaction(paymentRequest.addresses[0], paymentRequest.amount);
+                byte[] tmpTx = m.tryTransaction(paymentRequest.addresses[0].toLegacy(), paymentRequest.amount);
                 if (tmpTx == null) {
                     //something went wrong, failed to create tx
                     ((Activity) app).runOnUiThread(new Runnable() {
@@ -320,7 +321,7 @@ public class BRSender {
         String iso = BRSharedPrefs.getIso(ctx);
 
         BRWalletManager m = BRWalletManager.getInstance();
-        long feeForTx = m.feeForTransaction(request.addresses[0], request.amount);
+        long feeForTx = m.feeForTransaction(request.addresses[0].toLegacy(), request.amount);
         if (feeForTx == 0) {
             long maxAmount = m.getMaxOutputAmount();
             if (maxAmount == -1) {
@@ -338,7 +339,7 @@ public class BRSender {
 
                 return null;
             }
-            feeForTx = m.feeForTransaction(request.addresses[0], maxAmount);
+            feeForTx = m.feeForTransaction(request.addresses[0].toLegacy(), maxAmount);
             feeForTx += (BRWalletManager.getInstance().getBalance(ctx) - request.amount) % 100;
         }
         final long total = request.amount + feeForTx;
@@ -365,8 +366,8 @@ public class BRSender {
             certified = true;
         }
         StringBuilder allAddresses = new StringBuilder();
-        for (String s : item.addresses) {
-            allAddresses.append(s + ", ");
+        for (CashAddr s : item.addresses) {
+            allAddresses.append(s.toUnprefixedString() + ", ");
         }
         receiver = allAddresses.toString();
         allAddresses.delete(allAddresses.length() - 2, allAddresses.length());
@@ -387,9 +388,9 @@ public class BRSender {
 
     public boolean notEnoughForFee(Context app, PaymentItem paymentRequest) {
         BRWalletManager m = BRWalletManager.getInstance();
-        long feeForTx = m.feeForTransaction(paymentRequest.addresses[0], paymentRequest.amount);
+        long feeForTx = m.feeForTransaction(paymentRequest.addresses[0].toLegacy(), paymentRequest.amount);
         if (feeForTx == 0) {
-            feeForTx = m.feeForTransaction(paymentRequest.addresses[0], m.getMaxOutputAmount());
+            feeForTx = m.feeForTransaction(paymentRequest.addresses[0].toLegacy(), m.getMaxOutputAmount());
             return feeForTx != 0;
         }
         return false;

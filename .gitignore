@@ -3,6 +3,7 @@ app/src/main/jni/transition/testingStuff.c
 # Built application files
 *.apk
 *.ap_
+*.externalNativeBuild
 
 # Files for the Dalvik VM
 *.dex
@@ -70,3 +71,8 @@ crash.txt
 /app/google-services.json
 /.idea/markdown-navigator/
 /app/src/main/java/com/breadwallet/presenter/fragments/FragmentBreadSignal.java
+.project
+.settings/org.eclipse.buildship.core.prefs
+app/.classpath
+app/.project
+app/.settings/org.eclipse.buildship.core.prefs

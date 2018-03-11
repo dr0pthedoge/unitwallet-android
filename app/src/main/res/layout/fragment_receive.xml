@@ -216,7 +216,7 @@
                 android:layout_marginStart="8dp"
                 android:text="----------------------------------"
                 android:textColor="@color/light_gray"
-                android:textSize="16sp"
+                android:textSize="13sp"
                 />
 
             <com.breadwallet.presenter.customviews.BRLinearLayoutWithCaret
